@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: update-deployment
+  name: update-deployment-gitops
 spec:
   description: Task to update deployment with newly built image in gitops repository.
   params:
@@ -16,17 +16,15 @@ spec:
       default: gitops-auth-secret
       description: |
         Secret of basic-auth type containing credentials to commit into gitops repository.
-  volumes:
-    - name: gitops-auth-secret
+  workspaces:
+    - name: gitops-auth
+      mountPath: /gitops-auth-secret
+      optional: true
       secret:
         secretName: $(params.gitops-auth-secret-name)
-        optional: true
   steps:
     - name: patch-gitops
       image: quay.io/konflux-ci/appstudio-utils:ab6b0b8e40e440158e7288c73aff1cf83a2cc8a9@sha256:24179f0efd06c65d16868c2d7eb82573cce8e43533de6cea14fec3b7446e0b14
-      volumeMounts:
-        - name: gitops-auth-secret
-          mountPath: /gitops-auth-secret
       env:
         - name: PARAM_GITOPS_REPO_URL
           value: $(params.gitops-repo-url)
