@@ -5,7 +5,7 @@ metadata:
     pipelines.openshift.io/runtime: generic
     pipelines.openshift.io/strategy: docker
     pipelines.openshift.io/used-by: build-cloud
-  name: docker-build-ai-rhdh
+  name: docker-build-ai-rhdh-push-patch
 spec:
   finally:
     - name: show-sbom
@@ -59,10 +59,6 @@ spec:
       description: 'Secret name to enable this pipeline to update the gitops repo with the new image. '
       name: gitops-auth-secret-name
       type: string
-    - default: push
-      description: Event that triggered the pipeline run, e.g. push, pull_request
-      name: event-type
-      type: string
     - default: []
       description: Array of --build-arg values ("arg=value" strings) for buildah
       name: build-args
@@ -71,6 +67,22 @@ spec:
       description: Path to a file with build arguments for buildah, see https://www.mankier.com/1/buildah-build#--build-arg-file
       name: build-args-file
       type: string
+    - default: ""
+      description: The name of the OpenShift Deployment we want to update
+      name: deployment-name
+      type: string
+    - default: ""
+      description: The Namespace of the Deployment we want to update
+      name: deployment-namespace
+      type: string
+    - default: "app-inference"
+      description: The Container of the Deployment that it's image will be updated
+      name: container-name
+      type: string
+    - name: image
+      type: string
+      description: Reference of the newly built image to use.
+      default: ""
   results:
     - name: IMAGE_URL
       value: $(tasks.build-container.results.IMAGE_URL)
@@ -138,8 +150,14 @@ spec:
       workspaces:
         - name: source
           workspace: workspace
-    - name: update-deployment
+    - name: update-deployment-patch
       params:
+        - name: deployment-name
+          value: $(params.deployment-name)
+        - name: deployment-namespace
+          value: $(params.deployment-namespace)
+        - name: container-name
+          value: $(params.container-name)
         - name: gitops-repo-url
           value: $(params.git-url)-gitops
         - name: image
@@ -150,14 +168,10 @@ spec:
         - build-container
       taskRef:
         kind: Task
-        name: update-deployment
-      when:
-        - input: $(params.event-type)
-          operator: notin
-          values:
-            - pull_request
-            - Merge Request
+        name: update-deployment-patch
   workspaces:
     - name: workspace
     - name: git-auth
+      optional: true
+    - name: gitops-auth
       optional: true
