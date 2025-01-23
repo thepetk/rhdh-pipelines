@@ -1,0 +1,5 @@
+globs:
+  - pac/**/*.yaml
+rules:
+  prefer-kebab-case: off
+  no-invalid-name: warn

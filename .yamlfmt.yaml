@@ -1,0 +1,7 @@
+continue_on_error: true
+include: 
+  - pac
+formatter:
+  type: basic
+  eof_newline: true
+  trim_trailing_whitespace: true

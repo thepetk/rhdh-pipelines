@@ -28,7 +28,8 @@ spec:
           value: $(params.container-name)
         - name: NEW_IMAGE
           value: $(params.image)
-      script: |
+      script: |-
+        #!/bin/bash
         kubectl patch deployment ${DEPLOYMENT_NAME} --namespace ${DEPLOYMENT_NAMESPACE} --type 'merge' --patch "$( cat <<EOF
         spec:
           template:

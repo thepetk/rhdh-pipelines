@@ -41,7 +41,7 @@ spec:
           value: $(params.build-task-status)
         - name: SOURCE_BUILD_RESULT_FILE
           value: "$(workspaces.workspace.path)/source_build_result.json"
-      script: |
+      script: |-
         #!/usr/bin/env bash
         echo
         echo "Build Summary:"
