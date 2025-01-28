@@ -37,7 +37,7 @@ spec:
 
         # add the bearer secret in case is needed
         if [[ ${INCLUDE_MODEL_ENDPOINT_SECRET} == "true" && -n ${MODEL_ENDPOINT_SECRET_NAME}  && -n ${MODEL_ENDPOINT_SECRET_KEY} ]]; then
-          kubectl patch deployment ${DEPLOYMENT_NAME} --namespace ${DEPLOYMENT_NAMESPACE} --type 'merge' --patch "$( cat <<EOF
+          kubectl patch deployment ${DEPLOYMENT_NAME} --namespace ${DEPLOYMENT_NAMESPACE} --type 'merge' --patch '$( cat <<EOF
         spec:
           template:
             spec:
@@ -54,10 +54,10 @@ spec:
                       name: $MODEL_ENDPOINT_SECRET_NAME
                       key: $MODEL_ENDPOINT_SECRET_KEY
           EOF
-          )"
+          )'
         else
           # default case
-          kubectl patch deployment ${DEPLOYMENT_NAME} --namespace ${DEPLOYMENT_NAMESPACE} --type 'merge' --patch "$( cat <<EOF
+          kubectl patch deployment ${DEPLOYMENT_NAME} --namespace ${DEPLOYMENT_NAMESPACE} --type 'merge' --patch '$( cat <<EOF
         spec:
           template:
             spec:
@@ -68,7 +68,7 @@ spec:
                 - configMapRef:
                     name: $DEPLOYMENT_NAME-model-config
           EOF
-          )"
+          )'
         fi
 
         echo "Successfully updated ${CONTAINER_NAME} container's image to ${NEW_IMAGE}"
