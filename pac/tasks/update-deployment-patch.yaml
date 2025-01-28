@@ -30,7 +30,14 @@ spec:
           value: $(params.image)
       script: |-
         #!/bin/bash
-        kubectl patch deployment ${DEPLOYMENT_NAME} --namespace ${DEPLOYMENT_NAMESPACE} --type 'merge' --patch "$( cat <<EOF
+        # check if the updated deployment is a bearer authentication case.
+        INCLUDE_MODEL_ENDPOINT_SECRET=$(kubectl get configmap ${DEPLOYMENT_NAME}-app-config -n ${DEPLOYMENT_NAMESPACE} -o jsonpath="{.data.INCLUDE_MODEL_ENDPOINT_SECRET}")
+        MODEL_ENDPOINT_SECRET_NAME=$(kubectl get configmap ${DEPLOYMENT_NAME}-app-config -n ${DEPLOYMENT_NAMESPACE} -o jsonpath="{.data.MODEL_ENDPOINT_SECRET_NAME}")
+        MODEL_ENDPOINT_SECRET_KEY=$(kubectl get configmap ${DEPLOYMENT_NAME}-app-config -n ${DEPLOYMENT_NAMESPACE} -o jsonpath="{.data.MODEL_ENDPOINT_SECRET_KEY}")
+
+        # add the bearer secret in case is needed
+        if [[ ${INCLUDE_MODEL_ENDPOINT_SECRET} == "true" && -n ${MODEL_ENDPOINT_SECRET_NAME}  && -n ${MODEL_ENDPOINT_SECRET_KEY} ]]; then
+          kubectl patch deployment ${DEPLOYMENT_NAME} --namespace ${DEPLOYMENT_NAMESPACE} --type 'merge' --patch "$( cat <<EOF
         spec:
           template:
             spec:
@@ -40,6 +47,28 @@ spec:
                 envFrom:
                 - configMapRef:
                     name: $DEPLOYMENT_NAME-model-config
-        EOF
-        )"
+                env:
+                - name: MODEL_ENDPOINT_BEARER
+                  valueFrom:
+                    secretKeyRef:
+                      name: $MODEL_ENDPOINT_SECRET_NAME
+                      key: $MODEL_ENDPOINT_SECRET_KEY
+          EOF
+          )"
+        else
+          # default case
+          kubectl patch deployment ${DEPLOYMENT_NAME} --namespace ${DEPLOYMENT_NAMESPACE} --type 'merge' --patch "$( cat <<EOF
+        spec:
+          template:
+            spec:
+              containers:
+              - name: $CONTAINER_NAME
+                image: $NEW_IMAGE
+                envFrom:
+                - configMapRef:
+                    name: $DEPLOYMENT_NAME-model-config
+          EOF
+          )"
+        fi
+
         echo "Successfully updated ${CONTAINER_NAME} container's image to ${NEW_IMAGE}"
