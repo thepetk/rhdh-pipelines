@@ -53,8 +53,7 @@ spec:
                     secretKeyRef:
                       name: $MODEL_ENDPOINT_SECRET_NAME
                       key: $MODEL_ENDPOINT_SECRET_KEY
-EOF
-        )"
+        EOF)"
         else
           # default case
           kubectl patch deployment ${DEPLOYMENT_NAME} --namespace ${DEPLOYMENT_NAMESPACE} --type 'merge' --patch "$( cat <<EOF
@@ -67,8 +66,7 @@ EOF
                 envFrom:
                 - configMapRef:
                     name: $DEPLOYMENT_NAME-model-config
-EOF
-        )"
+        EOF)"
         fi
 
         echo "Successfully updated ${CONTAINER_NAME} container's image to ${NEW_IMAGE}"
