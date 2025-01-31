@@ -31,6 +31,7 @@ spec:
       script: |-
         #!/bin/bash
         # check if the updated deployment is a bearer authentication case.
+        # in other words check if the three configMap variables have been set in ${DEPLOYMENT_NAME}-app-config during the helm chart installation
         INCLUDE_MODEL_ENDPOINT_SECRET=$(kubectl get configmap ${DEPLOYMENT_NAME}-app-config -n ${DEPLOYMENT_NAMESPACE} -o jsonpath="{.data.INCLUDE_MODEL_ENDPOINT_SECRET}")
         MODEL_ENDPOINT_SECRET_NAME=$(kubectl get configmap ${DEPLOYMENT_NAME}-app-config -n ${DEPLOYMENT_NAMESPACE} -o jsonpath="{.data.MODEL_ENDPOINT_SECRET_NAME}")
         MODEL_ENDPOINT_SECRET_KEY=$(kubectl get configmap ${DEPLOYMENT_NAME}-app-config -n ${DEPLOYMENT_NAMESPACE} -o jsonpath="{.data.MODEL_ENDPOINT_SECRET_KEY}")
